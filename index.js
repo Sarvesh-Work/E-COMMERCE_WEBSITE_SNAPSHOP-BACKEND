@@ -5,10 +5,10 @@ const productsRouter = require("./router/ProductRouter.js");
 const brandsRouter = require("./router/BrandRouter.js");
 const categoriesRouter = require("./router/CategoryRouter.js");
 const UsersRouter = require("./router/UserRouter.js");
-const AuthRouter=require("./router/AuthRouter.js");
-const CartRouter=require("./router/CartRouter.js")
+const AuthRouter = require("./router/AuthRouter.js");
+const CartRouter = require("./router/CartRouter.js");
+const OrderRouter = require("./router/OrderRouter.js");
 const cors = require("cors");
-
 
 // ---middleware---
 server.use(
@@ -23,6 +23,7 @@ server.use("/categories", categoriesRouter.router);
 server.use("/users", UsersRouter.router);
 server.use("/auth", AuthRouter.router);
 server.use("/cart", CartRouter.router);
+server.use("/order", OrderRouter.router);
 // ---middleware---
 
 const main = async () => {

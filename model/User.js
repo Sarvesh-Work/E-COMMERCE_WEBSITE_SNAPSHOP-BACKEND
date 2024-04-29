@@ -32,5 +32,18 @@ const UserSchema = new Schema({
   orders: { type: [Schema.Types.Mixed] },
 });
 
+const virtual = UserSchema.virtual("id");
+virtual.get(function () {
+  return this._id;
+});
+
+cartSchema.set("toJSON", {
+  virtuals: true,
+  versionKey: false,
+  transform: function (doc, ret) {
+    delete ret._id;
+  },
+});
+
 const User = mongoose.model("User", UserSchema);
 module.exports = User;
