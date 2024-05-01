@@ -14,7 +14,7 @@ const productSchema = new Schema({
   rating: {
     type: Number,
     required: true,
-    min: [1, "wrong rating"],
+    min: [0, "wrong rating"],
     max: [99, "wrong rating"],
     default: 0,
   },

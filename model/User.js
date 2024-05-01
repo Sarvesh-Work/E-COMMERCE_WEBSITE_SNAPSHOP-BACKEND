@@ -37,7 +37,7 @@ virtual.get(function () {
   return this._id;
 });
 
-cartSchema.set("toJSON", {
+UserSchema.set("toJSON", {
   virtuals: true,
   versionKey: false,
   transform: function (doc, ret) {

@@ -13,7 +13,11 @@ exports.createProduct = async (req, res) => {
 
 exports.fetchAllProducts = async (req, res) => {
   try {
-    const query = {};
+    const condition={}
+    if(!req.query.admin){
+      condition.deleted={$ne:true}
+    }
+    const query =condition;
     if (req.query.category) query.category = req.query.category;
     if (req.query.brand) query.brand = req.query.brand;
 

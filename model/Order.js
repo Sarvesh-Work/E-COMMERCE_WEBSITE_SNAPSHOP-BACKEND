@@ -8,7 +8,7 @@ const orderSchema = new Schema({
   user: {type:Schema.Types.ObjectId , ref:"User", required:true},
   PaymentMethod: { type: String, required: true },
   status: { type: String, default: "pending" },
-  SelectedAddress: { type: [Schema.Types.Mixed], required: true },
+  SelectedAddress: { type: Schema.Types.Mixed, required: true },
 });
 
 const virtual = orderSchema.virtual("id");

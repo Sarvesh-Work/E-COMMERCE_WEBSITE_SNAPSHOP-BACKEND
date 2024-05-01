@@ -22,7 +22,7 @@ exports.loginUser = async (req, res) => {
     }
      
     else {
-      res.status(201).json({ id: user.id, email: user.email, addresses:user.address });
+      res.status(201).json({ id: user.id, email: user.email, role:user.role });
     }
   } catch (error) {
     console.error("Error creating product:", error);

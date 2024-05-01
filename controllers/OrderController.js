@@ -1,9 +1,11 @@
 const Order = require("../model/Order");
 
 exports.fetchOrderByUser = async (req, res) => {
-  const { user } = req.query;
+  const userId = req.params.id;
+
   try {
-    const orders = await Order.find({ user: user });
+    const orders = await Order.find({ user: userId });
+
     res.status(200).json(orders);
   } catch (error) {
     res.status(400).json(error);
@@ -39,9 +41,37 @@ exports.updateOrder = async (req, res) => {
     const updateOrder = await Order.findByIdAndUpdate(id, req.body, {
       new: true,
     });
-    res.status(200).json(result);
+    res.status(200).json(updateOrder);
   } catch (error) {
     console.error("Error finding product:", error);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
+exports.fetchAllOrders = async (req, res) => {
+  try {
+    const query = { deleted: { $ne: true } };
+
+    const totalDocs = await Order.countDocuments(query);
+
+    const pageSize = parseInt(req.query._limit) || 10;
+    const page = parseInt(req.query._page) || 1;
+
+    const docs = await Order.find(query)
+      .sort(
+        req.query._sort
+          ? { [req.query._sort]: req.query._order === "desc" ? -1 : 1 }
+          : {}
+      )
+      .skip(pageSize * (page - 1))
+      .limit(pageSize)
+      .exec();
+
+    res.set("X-Total-Count", totalDocs);
+    res.status(200).json(docs);
+  
+  } catch (error) {
+    console.error("Error fetching products:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
