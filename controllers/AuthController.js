@@ -1,10 +1,26 @@
+const { sanitizeUser } = require("../Services/common");
 const User = require("../model/User");
+const crypto = require("crypto");
 
 exports.createUser = async (req, res) => {
   try {
-    const user = await new User(req.body);
-    const savedUser = await user.save();
-    res.status(201).json(savedUser);
+    const salt = crypto.randomBytes(16);
+    crypto.pbkdf2(
+      req.body.password,
+      salt,
+      310000,
+      32,
+      "sha256",
+      async function (err, hashedPassword) {
+        const user = await new User({
+          ...req.body,
+          password: hashedPassword,
+          salt,
+        });
+        const savedUser = await user.save();
+        res.status(201).json(sanitizeUser(savedUser));
+      }
+    );
   } catch (error) {
     console.error("Error creating product:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -12,20 +28,11 @@ exports.createUser = async (req, res) => {
 };
 
 exports.loginUser = async (req, res) => {
-  try {
-    const user =await  User.findOne({email:req.body.email});
-    if (!user) {
-      res.status(401).json({ error: "user not found" });
-    }
-    else if(user.password!==req.body.password){
-        res.status(401).json({ error: "wrong password" });  
-    }
-     
-    else {
-      res.status(201).json({ id: user.id, email: user.email, role:user.role });
-    }
-  } catch (error) {
-    console.error("Error creating product:", error);
-    res.status(500).json({ error: "Internal server error" });
-  }
+  res
+    .status(201)
+    .json(req.user);
 };
+
+exports.check=async(req,res)=>{
+  res.json(req.user)
+}
