@@ -1,13 +1,13 @@
 const express = require("express");
 const {
-  fetchUserById,
-  updateUserById,
+  fetchUserInfo,
+  updateUser,
 } = require("../controllers/UserController");
 
 const router = express.Router();
 
 router
-  .get("/:id", fetchUserById)
-  .patch("/:id", updateUserById);
+  .get("/info", fetchUserInfo)
+  .patch("/update", updateUser);
 
 exports.router = router;

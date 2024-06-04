@@ -1,3 +1,4 @@
+require("dotenv").config()
 const express = require("express");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
@@ -15,14 +16,18 @@ const cors = require("cors");
 const User = require("./model/User.js");
 const LocalStrategy = require("passport-local").Strategy;
 const crypto = require("crypto");
-const { sanitizeUser, isAuth } = require("./Services/common.js");
+const cookieParser = require("cookie-parser");
+const {
+  sanitizeUser,
+  isAuth,
+  cookieExtractor,
+} = require("./Services/common.js");
 const JwtStrategy = require("passport-jwt").Strategy;
-const ExtractJwt = require("passport-jwt").ExtractJwt;
-const secretKey = "SECRET_KEY";
+
 
 // ---middleware---
 server.use(
-  session({ secret: "keyboard cat", resave: false, saveUninitialized: false })
+  session({ secret: process.env.SESSION_KEY, resave: false, saveUninitialized: false })
 );
 server.use(passport.authenticate("session"));
 server.use(
@@ -30,28 +35,36 @@ server.use(
     exposedHeaders: ["X-Total-Count"],
   })
 );
+server.use(express.static("dist"));
+// server.use(express.raw({ type: "application/json" }))
+server.use(cookieParser());
 server.use(express.json());
 server.use("/products", productsRouter.router);
 server.use("/brands", brandsRouter.router);
 server.use("/categories", categoriesRouter.router);
-server.use("/users",isAuth(), UsersRouter.router);
+server.use("/user", isAuth(), UsersRouter.router);
 server.use("/auth", AuthRouter.router);
-server.use("/cart",isAuth(),  CartRouter.router);
-server.use("/order",isAuth(),  OrderRouter.router);
+server.use("/cart", isAuth(), CartRouter.router);
+server.use("/order", isAuth(), OrderRouter.router);
 
 // jwt options
 const opts = {};
-opts.jwtFromRequest = ExtractJwt.fromAuthHeaderAsBearerToken();
-opts.secretOrKey = secretKey;
+
+opts.jwtFromRequest = cookieExtractor;
+opts.secretOrKey = process.env.JWT_SECRET_KEY;
 
 // ---middleware---
 
 // passport js localStorage
 passport.use(
-  
-  new LocalStrategy(async function (username, password, done) {
+  "local",
+  new LocalStrategy({ usernameField: "email" }, async function (
+    email,
+    password,
+    done
+  ) {
     try {
-      const user = await User.findOne({ email: username }).exec();
+      const user = await User.findOne({ email: email }).exec();
       if (!user) {
         done(null, false, { message: "User not found invalid credentials" });
       }
@@ -66,8 +79,8 @@ passport.use(
           if (!crypto.timingSafeEqual(user.password, hashedPassword)) {
             done(null, false, { message: "wrong credentials" });
           }
-          const token = jwt.sign(sanitizeUser(user), secretKey);
-          done(null, token);
+          const token = jwt.sign(sanitizeUser(user), process.env.JWT_SECRET_KEY);
+          done(null, { token });
         }
       );
     } catch (error) {
@@ -77,41 +90,100 @@ passport.use(
 );
 
 passport.use(
-
+  "jwt",
   new JwtStrategy(opts, async function (jwt_payload, done) {
     try {
-      const user=await User.findOne({ id: jwt_payload.sub })
+      const user = await User.findById(jwt_payload.id);
       if (user) {
-        return done(null, user);
+        return done(null, sanitizeUser(user));
       } else {
         return done(null, false);
-       
       }
-    } catch (error) {
-       done(err, false);
+    } catch (err) {
+      return done(err, false);
     }
-   
-      
-     
-     
   })
 );
 
 passport.serializeUser(function (user, cb) {
+  console.log("serialize", { user });
   process.nextTick(function () {
-    return cb(null, sanitizeUser(user));
+    return cb(null, { id: user.id, role: user.role });
   });
 });
 
 passport.deserializeUser(function (user, cb) {
+  console.log("deserialize", { user });
   process.nextTick(function () {
     return cb(null, user);
   });
 });
-// passport js localStorage
+
+// This is your test secret API key.
+const stripe = require("stripe")(
+  process.env.STRIPE_SERVER_KEY
+);
+
+server.post("/create-payment-intent", async (req, res) => {
+  const { totalAmount } = req.body;
+
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: totalAmount * 100,
+    currency: "inr",
+    automatic_payment_methods: {
+      enabled: true,
+    },
+  });
+
+  res.send({
+    clientSecret: paymentIntent.client_secret,
+  });
+});
+
+const endpointSecret = process.env.ENDPOINT_SECRET;
+
+server.post(
+  "/webhook",
+  express.raw({ type: "application/json" }),
+  (request, response) => {
+    let event = request.body;
+
+    if (endpointSecret) {
+      const signature = request.headers["stripe-signature"];
+      try {
+        event = stripe.webhooks.constructEvent(
+          request.body,
+          signature,
+          endpointSecret
+        );
+      } catch (err) {
+        console.log(`⚠️  Webhook signature verification failed.`, err.message);
+        return response.sendStatus(400);
+      }
+    }
+
+    switch (event.type) {
+      case 'payment_intent.succeeded':
+        const paymentIntent = event.data.object;
+        console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
+     
+        break;
+      case 'payment_method.attached':
+        const paymentMethod = event.data.object;
+        // Then define and call a method to handle the successful attachment of a PaymentMethod.
+        // handlePaymentMethodAttached(paymentMethod);
+        break;
+      default:
+        // Unexpected event type
+        console.log(`Unhandled event type ${event.type}.`);
+    }
+  
+    response.send();
+  }
+);
 
 const main = async () => {
-  await mongoose.connect("mongodb://127.0.0.1:27017/snapshop");
+  await mongoose.connect(process.env.MONGODB_URL);
   console.log("connected");
 };
 
@@ -121,6 +193,6 @@ server.get("/", (req, res) => {
   res.json({ status: "working" });
 });
 
-server.listen(8080, () => {
+server.listen(process.env.PORT, () => {
   console.log("server is started on 8080 port");
 });

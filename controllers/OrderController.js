@@ -1,12 +1,12 @@
 const Order = require("../model/Order");
 
 exports.fetchOrderByUser = async (req, res) => {
-  const userId = req.params.id;
-
   try {
-    const orders = await Order.find({ user: userId });
-
+    const { id } = req.user;
+    const orders = await Order.find({ user: id });
+    setTimeout(() => {
     res.status(200).json(orders);
+    }, 1000);
   } catch (error) {
     res.status(400).json(error);
   }
@@ -69,7 +69,6 @@ exports.fetchAllOrders = async (req, res) => {
 
     res.set("X-Total-Count", totalDocs);
     res.status(200).json(docs);
-  
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(500).json({ error: "Internal server error" });

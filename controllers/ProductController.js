@@ -13,11 +13,11 @@ exports.createProduct = async (req, res) => {
 
 exports.fetchAllProducts = async (req, res) => {
   try {
-    const condition={}
-    if(!req.query.admin){
-      condition.deleted={$ne:true}
+    const condition = {};
+    if (!req.query.admin) {
+      condition.deleted = { $ne: true };
     }
-    const query =condition;
+    const query = condition;
     if (req.query.category) query.category = req.query.category;
     if (req.query.brand) query.brand = req.query.brand;
 
@@ -38,8 +38,11 @@ exports.fetchAllProducts = async (req, res) => {
       .limit(pageSize)
       .exec();
 
+
     res.set("X-Total-Count", totalDocs);
     res.status(200).json(docs);
+
+    
   } catch (error) {
     console.error("Error fetching products:", error);
     res.status(500).json({ error: "Internal server error" });
@@ -49,13 +52,12 @@ exports.fetchAllProducts = async (req, res) => {
 exports.fetchProductById = async (req, res) => {
   try {
     const id = req.params.id;
-
     const productById = await Product.findById(id);
 
-    res.status(200).json(productById);
+      res.status(200).json(productById); 
+  
   } catch (error) {
     console.error("Error finding product:", error);
-
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -63,7 +65,6 @@ exports.fetchProductById = async (req, res) => {
 exports.updateProductById = async (req, res) => {
   try {
     const id = req.params.id;
-
     const productById = await Product.findByIdAndUpdate(id, req.body, {
       new: true,
     });
@@ -75,5 +76,3 @@ exports.updateProductById = async (req, res) => {
     res.status(500).json({ error: "Internal server error" });
   }
 };
-
- 

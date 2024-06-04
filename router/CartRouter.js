@@ -3,8 +3,8 @@ const { addToCart, fetchCartByUser, deleteItemFromCart, updateItemInCart } = req
 const router = express.Router();
 
 router
-  .post("/", addToCart)
-  .get("/", fetchCartByUser)
+  .post("/add", addToCart)
+  .get("/allProducts", fetchCartByUser)
   .delete("/deleteFromCart/:id",deleteItemFromCart)
   .patch("/updateInCart/:id",updateItemInCart)
 
