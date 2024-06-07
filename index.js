@@ -1,4 +1,4 @@
-require("dotenv").config()
+require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const jwt = require("jsonwebtoken");
@@ -24,10 +24,13 @@ const {
 } = require("./Services/common.js");
 const JwtStrategy = require("passport-jwt").Strategy;
 
-
 // ---middleware---
 server.use(
-  session({ secret: process.env.SESSION_KEY, resave: false, saveUninitialized: false })
+  session({
+    secret: process.env.SESSION_KEY,
+    resave: false,
+    saveUninitialized: false,
+  })
 );
 server.use(passport.authenticate("session"));
 server.use(
@@ -35,7 +38,7 @@ server.use(
     exposedHeaders: ["X-Total-Count"],
   })
 );
-server.use(express.static("dist"));
+
 // server.use(express.raw({ type: "application/json" }))
 server.use(cookieParser());
 server.use(express.json());
@@ -79,7 +82,10 @@ passport.use(
           if (!crypto.timingSafeEqual(user.password, hashedPassword)) {
             done(null, false, { message: "wrong credentials" });
           }
-          const token = jwt.sign(sanitizeUser(user), process.env.JWT_SECRET_KEY);
+          const token = jwt.sign(
+            sanitizeUser(user),
+            process.env.JWT_SECRET_KEY
+          );
           done(null, { token });
         }
       );
@@ -106,23 +112,19 @@ passport.use(
 );
 
 passport.serializeUser(function (user, cb) {
-  console.log("serialize", { user });
   process.nextTick(function () {
     return cb(null, { id: user.id, role: user.role });
   });
 });
 
 passport.deserializeUser(function (user, cb) {
-  console.log("deserialize", { user });
   process.nextTick(function () {
     return cb(null, user);
   });
 });
 
 // This is your test secret API key.
-const stripe = require("stripe")(
-  process.env.STRIPE_SERVER_KEY
-);
+const stripe = require("stripe")(process.env.STRIPE_SERVER_KEY);
 
 server.post("/create-payment-intent", async (req, res) => {
   const { totalAmount } = req.body;
@@ -163,12 +165,14 @@ server.post(
     }
 
     switch (event.type) {
-      case 'payment_intent.succeeded':
+      case "payment_intent.succeeded":
         const paymentIntent = event.data.object;
-        console.log(`PaymentIntent for ${paymentIntent.amount} was successful!`);
-     
+        console.log(
+          `PaymentIntent for ${paymentIntent.amount} was successful!`
+        );
+
         break;
-      case 'payment_method.attached':
+      case "payment_method.attached":
         const paymentMethod = event.data.object;
         // Then define and call a method to handle the successful attachment of a PaymentMethod.
         // handlePaymentMethodAttached(paymentMethod);
@@ -177,7 +181,7 @@ server.post(
         // Unexpected event type
         console.log(`Unhandled event type ${event.type}.`);
     }
-  
+
     response.send();
   }
 );

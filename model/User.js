@@ -25,13 +25,14 @@ const UserSchema = new Schema({
   role: {
     type: String,
     required: true,
-    default:"user"
+    default: "user",
   },
   address: [Schema.Types.Mixed],
   name: { type: String },
   orders: { type: [Schema.Types.Mixed] },
-  salt:Buffer
-});
+  salt: Buffer,
+  resetPasswordToken: { type: String, default: "" },
+},{timestamps:true});
 
 const virtual = UserSchema.virtual("id");
 virtual.get(function () {
