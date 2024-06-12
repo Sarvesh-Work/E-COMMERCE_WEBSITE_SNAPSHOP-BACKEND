@@ -12,24 +12,21 @@ const productSchema = new Schema(
       min: [1, "wrong discountPercentage"],
       max: [99, "wrong discountPercentage"],
     },
-    rating: {
-      type: Number,
-      required: true,
-      min: [0, "wrong rating"],
-      max: [99, "wrong rating"],
-      default: 0,
-    },
+  
     stock: {
       type: Number,
       required: true,
-      min: [1, "wrong min stock"],
+      min: [0, "wrong min stock"],
       default: 0,
     },
     brand: { type: String, required: true },
     category: { type: String, required: true },
     thumbnail: { type: String, required: true },
-    images: [{ type: String, required: true }],
+    images: [{ type: Schema.Types.Mixed, required: true }],
     deleted: { type: Boolean, default: false },
+    color: [{ type: Schema.Types.Mixed }],
+    highlights: [{ type: Schema.Types.Mixed, required: true }],
+    discountPrice:{type:Number,required:true}
   },
   { timestamps: true }
 );

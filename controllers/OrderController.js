@@ -1,25 +1,43 @@
+const { sendMail, invoice } = require("../Services/common");
 const Order = require("../model/Order");
+const Product = require("../model/Product");
+const User = require("../model/User");
 
 exports.fetchOrderByUser = async (req, res) => {
   try {
     const { id } = req.user;
-    const orders = await Order.find({ user: id });
+    const orders = await Order.find({ user: id }).lean();
     setTimeout(() => {
-    res.status(200).json(orders);
+      res.status(200).json(orders);
     }, 1000);
   } catch (error) {
-    res.status(400).json(error);
+    console.error("Error fetching orders:", error);
+    res.status(500).json({ error: "Internal server error" });
   }
 };
 
 exports.createOrder = async (req, res) => {
+  const newOrder = new Order(req.body);
+
   try {
-    const newOrder = new Order(req.body);
     const savedOrder = await newOrder.save();
+    const user = await User.findById(newOrder.user);
+
+    const productIds = newOrder.items.map((item) => item.product.id);
+    await Product.updateMany(
+      { _id: { $in: productIds } },
+      { $inc: { stock: -1 } }
+    );
+
+    sendMail({
+      to: user.email,
+      html: invoice(newOrder),
+      subject: "Order Received",
+    });
 
     res.status(201).json(savedOrder);
   } catch (error) {
-    console.error("Error creating product:", error);
+    console.error("Error creating order:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -27,10 +45,13 @@ exports.createOrder = async (req, res) => {
 exports.deleteOrder = async (req, res) => {
   try {
     const id = req.params.id;
-    const OrderById = await Order.findByIdAndDelete(id);
-    res.status(200).json(OrderById);
+    const deletedOrder = await Order.findByIdAndDelete(id);
+    if (!deletedOrder) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    res.status(200).json(deletedOrder);
   } catch (error) {
-    console.error("Error finding Item:", error);
+    console.error("Error deleting order:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
@@ -38,12 +59,15 @@ exports.deleteOrder = async (req, res) => {
 exports.updateOrder = async (req, res) => {
   try {
     const id = req.params.id;
-    const updateOrder = await Order.findByIdAndUpdate(id, req.body, {
+    const updatedOrder = await Order.findByIdAndUpdate(id, req.body, {
       new: true,
     });
-    res.status(200).json(updateOrder);
+    if (!updatedOrder) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+    res.status(200).json(updatedOrder);
   } catch (error) {
-    console.error("Error finding product:", error);
+    console.error("Error updating order:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };

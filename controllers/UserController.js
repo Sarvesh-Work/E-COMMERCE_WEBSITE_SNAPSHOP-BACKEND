@@ -1,35 +1,25 @@
-const { sanitizeUser } = require("../Services/common");
 const User = require("../model/User");
 
 exports.fetchUserInfo = async (req, res) => {
-  const { id } = req.user;
-  console.log(id);
   try {
-    const user = await User.findById(id);
-    setTimeout(() => {
-      res.status(200).json({
-        id: user.id,
-        address: user.address,
-        email: user.email,
-        role: user.role,
-      });
-    }, 1000);
+    const { id } = req.user;
+    const user = await User.findById(id).select("id address email role");
+    res.status(200).json(user);
   } catch (err) {
-    res.status(400).json(err);
+    console.error("Error fetching user info:", err);
+    res.status(400).json({ error: "Bad request" });
   }
 };
 
 exports.updateUser = async (req, res) => {
   try {
     const { id } = req.user;
-    const UserById = await User.findByIdAndUpdate(id, req.body, {
+    const updatedUser = await User.findByIdAndUpdate(id, req.body, {
       new: true,
     });
-    setTimeout(()=>{
-      res.status(200).json(UserById);
-    },1000)
+    res.status(200).json(updatedUser);
   } catch (error) {
-    console.error("Error finding User:", error);
+    console.error("Error updating user:", error);
     res.status(500).json({ error: "Internal server error" });
   }
 };
