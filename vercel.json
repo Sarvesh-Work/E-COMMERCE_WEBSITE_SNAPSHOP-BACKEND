@@ -84,11 +84,3 @@
   
 
   }
-
-  server.use("/products", productsRouter.router);
-server.use("/brands", brandsRouter.router);
-server.use("/categories", categoriesRouter.router);
-server.use("/user", isAuth(), UsersRouter.router);
-server.use("/auth", AuthRouter.router);
-server.use("/cart", isAuth(), CartRouter.router);
-server.use("/order", isAuth(), OrderRouter.router);
