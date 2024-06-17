@@ -23,6 +23,7 @@ const {
   cookieExtractor,
 } = require("./Services/common.js");
 const JwtStrategy = require("passport-jwt").Strategy;
+const path=require('path')
 
 // ---middleware---
 server.use(
@@ -49,6 +50,7 @@ server.use("/user", isAuth(), UsersRouter.router);
 server.use("/auth", AuthRouter.router);
 server.use("/cart", isAuth(), CartRouter.router);
 server.use("/order", isAuth(), OrderRouter.router);
+// server.use(express.static(path.resolve(__dirname,'dist')))
 
 // jwt options
 const opts = {};
@@ -86,7 +88,7 @@ passport.use(
             sanitizeUser(user),
             process.env.JWT_SECRET_KEY
           );
-          done(null, { token });
+          done(null, { id: user.id, role: user.role, token }); 
         }
       );
     } catch (error) {

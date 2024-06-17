@@ -80,7 +80,7 @@ exports.resetPasswordRequest = async (req, res) => {
     await user.save();
 
     const resetPageLink =
-      "http://localhost:5173/reset-password?token=" + token + "&email=" + email;
+      "http://:5173/reset-password?token=" + token + "&email=" + email;
     const subject = "reset password for snapShop";
     const html = `<p>Click <a href=${resetPageLink}>here</a> to reset the password </p>`;
     if (email) {

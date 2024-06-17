@@ -1,0 +1,94 @@
+{
+    "builds": [
+      {
+        "src": "index.js",
+        "use": "@vercel/node"
+      },
+      {
+        "src": "dist/**",
+        "use": "@vercel/static"
+      }
+    ],
+    "router":[
+        {
+            "src": "/products",
+            "dest": "index.js"
+        },
+        {
+            "src": "/products/(.*)",
+            "dest": "index.js"
+        },
+        {
+            "src": "/brands",
+            "dest": "index.js"
+        },
+        {
+            "src": "/brands/(.*)",
+            "dest": "index.js"
+        },
+        {
+            "src": "/categories",
+            "dest": "index.js"
+        },
+        {
+            "src": "/categories/(.*)",
+            "dest": "index.js"
+        },
+        {
+            "src": "/user",
+            "dest": "index.js"
+        },
+        {
+            "src": "/user/(.*)",
+            "dest": "index.js"
+        },
+        {
+            "src": "/auth",
+            "dest": "index.js"
+        },
+        {
+            "src": "/auth/(.*)",
+            "dest": "index.js"
+        },
+        {
+            "src": "/cart",
+            "dest": "index.js"
+        },
+        {
+            "src": "/cart/(.*)",
+            "dest": "index.js"
+        },
+        {
+            "src": "/order",
+            "dest": "index.js"
+        },
+        {
+            "src": "/order/(.*)",
+            "dest": "index.js"
+        },
+        {
+            "src": "/",
+            "dest": "dist/index.html"
+        },
+        {
+            "src": "/(.*)",
+            "dest": "dist/$1"
+        },{
+            "src": "/webhook",
+            "dest": "index.js"
+        }, {
+            "src": "/create-payment-intent",
+            "dest": "index.js"
+        }
+    ]
+  
+
+  }
+
+  server.use("/products", productsRouter.router);
+server.use("/brands", brandsRouter.router);
+server.use("/categories", categoriesRouter.router);
+server.use("/user", isAuth(), UsersRouter.router);
+server.use("/auth", AuthRouter.router);
+server.use("/cart", isAuth(), CartRouter.router);
+server.use("/order", isAuth(), OrderRouter.router);
