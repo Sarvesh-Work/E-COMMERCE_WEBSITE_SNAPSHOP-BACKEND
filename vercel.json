@@ -1,15 +1,19 @@
 {
+    "version": 2,
     "builds": [
-        {
-            "src": "dist/index.js",
-            "use": "@vercel/node"
-        },
-        {
-            "src": "dist/**",
-            "use": "@vercel/static"
+      {
+        "src": "api/index.js",
+        "use": "@vercel/node"
+      },
+      {
+        "src": "dist/**",
+        "use": "@vercel/static-build",
+        "config": {
+          "distDir": "build"
         }
+      }
     ],
-    "routes": [
+    "routes":[
         {
             "src": "/products",
             "dest": "index.js"
@@ -73,14 +77,14 @@
         {
             "src": "/(.*)",
             "dest": "dist/$1"
-        },
-        {
+        },{
             "src": "/webhook",
             "dest": "index.js"
-        },
-        {
+        }, {
             "src": "/create-payment-intent",
             "dest": "index.js"
         }
     ]
-}
+  
+
+  }
