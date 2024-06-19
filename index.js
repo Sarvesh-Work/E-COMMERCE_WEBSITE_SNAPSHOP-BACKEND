@@ -53,6 +53,7 @@ server.use("/order", isAuth(), OrderRouter.router);
 server.use(express.static(path.resolve(__dirname,'dist')))
 server.use(cors({
   origin:[],
+  methods:["POST","GET"],
   credentials:true
 }))
 
