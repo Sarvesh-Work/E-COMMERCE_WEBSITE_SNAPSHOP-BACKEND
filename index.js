@@ -51,6 +51,10 @@ server.use("/auth", AuthRouter.router);
 server.use("/cart", isAuth(), CartRouter.router);
 server.use("/order", isAuth(), OrderRouter.router);
 server.use(express.static(path.resolve(__dirname,'dist')))
+server.use(cors({
+  origin:[],
+  credentials:true
+}))
 
 // jwt options
 const opts = {};
